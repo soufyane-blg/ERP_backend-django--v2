@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual Environment
+venv/
+.env/
+
+# Environment Variables
+.env
+
+# SQLite
+db.sqlite3
+
+# Static & Media
+staticfiles/
+media/
+
+# Coverage & Testing
+htmlcov/
+.coverage
+.pytest_cache/
+
+# VS Code
+.vscode/
+
+# macOS
+.DS_Store
+
+# Docker
+*.log
+
+# Migrations cache
+*.sqlite3-journal

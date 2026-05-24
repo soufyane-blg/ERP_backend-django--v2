@@ -17,6 +17,7 @@ djangorestframework_simplejwt==5.5.1
 drf-spectacular==0.29.0
 executing==2.2.0
 filelock==3.18.0
+gunicorn==26.0.0
 idna==3.12
 inflection==0.5.1
 iniconfig==2.3.0

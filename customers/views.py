@@ -6,7 +6,7 @@ from rest_framework.exceptions import ValidationError
 from .models import Customer
 
 from .serializers import (
-    CustomersReadSerializer,
+    CustomerReadSerializer,
 )
 
 from .services import (
@@ -21,10 +21,42 @@ from accounts.permissions import (
     HasSameOrganization,
 )
 
+from django_filters.rest_framework import (
+    DjangoFilterBackend
+)
 
-class CustomersViewSet(viewsets.ModelViewSet):
+from rest_framework.filters import (
+    SearchFilter,
+    OrderingFilter,
+)
 
-    serializer_class = CustomersReadSerializer
+from .filters import CustomerFilter
+
+class CustomerViewSet(viewsets.ModelViewSet):
+
+    serializer_class = CustomerReadSerializer
+
+    filter_backends = [
+            DjangoFilterBackend,
+            SearchFilter,
+            OrderingFilter,
+        ]
+
+    filterset_class = CustomerFilter
+
+    search_fields = [
+            "name",
+            "email",
+        ]
+
+    ordering_fields = [
+            "created_at",
+            "name",
+        ]
+
+    ordering = [
+            "-created_at",
+        ]
 
     def get_queryset(self):
 
@@ -107,5 +139,5 @@ class CustomersViewSet(viewsets.ModelViewSet):
 
         return Response(
             {"detail": "Customer deleted successfully."},
-            status=status.HTTP_204_NO_CONTENT
+            status=204
         )

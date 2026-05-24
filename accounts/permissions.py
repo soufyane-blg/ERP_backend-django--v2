@@ -1,4 +1,4 @@
-from rest_framework.permissions import BasePermission, SAFE_METHODS, IsAuthenticated
+from rest_framework.permissions import BasePermission, SAFE_METHODS
 
 
 
@@ -12,12 +12,21 @@ class IsStaffOrReadOnly(BasePermission):
         return request.user.is_authenticated and request.user.is_staff
 
 
-class HasSameOrganization(BasePermission):
+class HasSameOrganization(
+    BasePermission
+):
 
-    def has_object_permission(self, request, view, obj):
+    def has_object_permission(
+        self,
+        request,
+        view,
+        obj,
+    ):
 
         return (
             request.user.is_authenticated
-            and obj.organization == request.user.organization
+            and hasattr(obj, "organization")
+            and obj.organization
+            == request.user.organization
         )
     

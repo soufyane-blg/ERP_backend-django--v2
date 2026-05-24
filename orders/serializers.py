@@ -5,21 +5,34 @@ from .models import Order, OrderItem
 from products.models import Product
 
 
-class OrderItemCreateSerializer(serializers.Serializer):
+class OrderItemCreateSerializer(
+    serializers.Serializer
+):
 
     product = serializers.PrimaryKeyRelatedField(
         queryset=Product.objects.all()
     )
 
-    quantity = serializers.IntegerField(min_value=1)
+    quantity = serializers.IntegerField(
+        min_value=1
+    )
 
-    def validate_product(self, product):
+    def validate_product(
+        self,
+        product,
+    ):
 
-        request = self.context.get("request")
+        user = self.context.get("user")
 
-        if request and product.organization != request.user.organization:
+        if (
+            user
+            and product.organization
+            != user.organization
+        ):
+
             raise serializers.ValidationError(
-                "This product does not belong to your organization."
+                "This product does not belong "
+                "to your organization."
             )
 
         return product

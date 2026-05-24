@@ -1,4 +1,6 @@
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import (
+    ValidationError
+)
 
 from .models import Product
 
@@ -7,72 +9,107 @@ from .serializers import (
 )
 
 
-def create_product(*, user, data):
+def create_product(
+    *,
+    user,
+    data,
+):
 
     if user.organization is None:
+
         raise ValidationError(
             {
                 "detail":
-                "User does not belong to any organization."
+                "User does not belong "
+                "to any organization."
             }
         )
 
-    serializer = ProductCreateUpdateSerializer(
-        data=data
+    serializer = (
+        ProductCreateUpdateSerializer(
+            data=data
+        )
     )
 
-    serializer.is_valid(raise_exception=True)
+    serializer.is_valid(
+        raise_exception=True
+    )
+
+    validated_data = (
+        serializer.validated_data
+    )
 
     product = Product.objects.create(
-        name=serializer.validated_data["name"],
-        description=serializer.validated_data.get(
+
+        name=validated_data["name"],
+
+        description=validated_data.get(
             "description",
-            ""
+            "",
         ),
-        stock=serializer.validated_data["quantity"],
-        organization=user.organization
+
+        price=validated_data["price"],
+
+        stock=validated_data["stock"],
+
+        category=validated_data.get(
+            "category",
+            "",
+        ),
+
+        organization=user.organization,
     )
 
     return product
 
 
-def update_product(*, product, data):
+def update_product(
+    *,
+    product,
+    data,
+):
 
-    serializer = ProductCreateUpdateSerializer(
-        data=data,
-        partial=True
+    serializer = (
+        ProductCreateUpdateSerializer(
+            data=data,
+            partial=True
+        )
     )
 
-    serializer.is_valid(raise_exception=True)
+    serializer.is_valid(
+        raise_exception=True
+    )
 
-    validated_data = serializer.validated_data
+    validated_data = (
+        serializer.validated_data
+    )
 
-    if "name" in validated_data:
-        product.name = validated_data["name"]
+    for field, value in (
+        validated_data.items()
+    ):
 
-    if "description" in validated_data:
-        product.description = validated_data[
-            "description"
-        ]
-
-    if "quantity" in validated_data:
-        product.stock = validated_data[
-            "quantity"
-        ]
+        setattr(
+            product,
+            field,
+            value
+        )
 
     product.save()
 
     return product
 
 
-def delete_product(product):
+def delete_product(
+    product,
+):
 
-    if product.order_items.exists():
+    if product.orderitem_set.exists():
 
         raise ValidationError(
             {
                 "detail":
-                "Cannot delete a product used in orders."
+                "Cannot delete a product "
+                "used in orders."
             }
         )
 

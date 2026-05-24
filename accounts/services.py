@@ -1,7 +1,9 @@
+# services.py
+
 from django.contrib.auth import get_user_model, authenticate
 from django.db import transaction
 
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import AuthenticationFailed, ValidationError
 
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
@@ -13,15 +15,11 @@ User = get_user_model()
 
 @transaction.atomic
 def register_user(
-    username: str,
     email: str,
     password: str,
     organization_name: str,
     role: str
 ):
-
-    if User.objects.filter(username=username).exists():
-        raise ValidationError("Username already exists")
 
     if User.objects.filter(email=email).exists():
         raise ValidationError("Email already exists")
@@ -34,35 +32,46 @@ def register_user(
         }
     )
 
+    # username required because you still use AbstractUser
     user = User.objects.create_user(
-        username=username,
+        username=email,
         email=email,
         password=password,
         organization=organization
     )
 
     user.role = role
-    user.save(update_fields=["role"])
+
+    if role == "admin":
+        user.is_staff = True
+
+    user.save(
+        update_fields=[
+            "role",
+            "is_staff",
+        ]
+    )
 
     return {
         "id": user.id,
-        "username": user.username,
+        "email": user.email,
         "organization": organization.name,
     }
 
 
-def login_user(username: str, password: str):
+def login_user(email: str, password: str):
 
+    # authenticate uses username internally
     user = authenticate(
-        username=username,
+        username=email,
         password=password
     )
 
     if not user:
-        raise ValidationError("Invalid username or password")
+        raise AuthenticationFailed("Invalid email or password")
 
     if not user.is_active:
-        raise ValidationError("User is inactive")
+        raise AuthenticationFailed("User is inactive")
 
     return user
 
@@ -77,18 +86,19 @@ def generate_tokens(user):
     }
 
 
-def login_service(username: str, password: str):
+def login_service(email: str, password: str):
 
-    user = login_user(username, password)
+    user = login_user(email, password)
 
     tokens = generate_tokens(user)
 
     return {
-        "user_id": user.id,
-        "username": user.username,
-        "access": tokens["access"],
-        "refresh": tokens["refresh"],
-    }
+    "user_id": user.id,
+    "username": user.username,
+    "email": user.email,
+    "access": tokens["access"],
+    "refresh": tokens["refresh"],
+}
 
 
 def refresh_tokens_service(refresh_token: str):
@@ -109,7 +119,6 @@ def get_current_user(user):
 
     return {
         "id": user.id,
-        "username": user.username,
         "email": user.email,
         "organization": user.organization.name,
     }
@@ -119,7 +128,6 @@ def logout_service(refresh_token: str):
 
     try:
         token = RefreshToken(refresh_token)
-
         token.blacklist()
 
     except TokenError:

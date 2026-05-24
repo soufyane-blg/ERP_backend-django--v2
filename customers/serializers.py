@@ -51,6 +51,9 @@ class CustomerCreateUpdateSerializer(serializers.Serializer):
         return value
 
     def validate_phone_number(self, value):
+        
+        value = value.strip()
+        
         if not value:
             return value
 

@@ -1,50 +1,94 @@
-# services.py
-
 from decimal import Decimal
 
 from django.db import transaction
-from rest_framework.exceptions import ValidationError
+
+from rest_framework.exceptions import (
+    ValidationError
+)
 
 from customers.models import Customer
 from products.models import Product
 
-from .models import Order, OrderItem
-from .serializers import OrderCreateSerializer
+from .models import (
+    Order,
+    OrderItem,
+)
+
+from .serializers import (
+    OrderCreateSerializer
+)
 
 
 VALID_TRANSITIONS = {
-    "pending": ["shipped", "canceled"],
-    "shipped": ["delivered"],
+
+    "pending": [
+        "shipped",
+        "canceled",
+    ],
+
+    "shipped": [
+        "delivered",
+    ],
+
     "delivered": [],
+
     "canceled": [],
 }
 
 
 @transaction.atomic
-def create_order(data, organization, user):
+def create_order(
+    data,
+    organization,
+    user,
+):
 
     serializer = OrderCreateSerializer(
         data=data,
-        context={"request": user}
+        context={
+            "user": user
+        }
     )
 
-    serializer.is_valid(raise_exception=True)
+    serializer.is_valid(
+        raise_exception=True
+    )
 
-    validated_data = serializer.validated_data
+    validated_data = (
+        serializer.validated_data
+    )
 
-    customer_name = validated_data["customer"].strip()
+    customer_name = (
+        validated_data["customer"]
+        .strip()
+    )
 
-    items_data = validated_data["items"]
+    items_data = (
+        validated_data["items"]
+    )
 
     if not customer_name:
+
         raise ValidationError(
             {
                 "customer":
-                "Customer name cannot be empty."
+                "Customer name cannot "
+                "be empty."
+            }
+        )
+
+    if not items_data:
+
+        raise ValidationError(
+            {
+                "items":
+                "Order must contain "
+                "at least one item."
             }
         )
 
     if user.organization != organization:
+
         raise ValidationError(
             {
                 "detail":
@@ -52,28 +96,22 @@ def create_order(data, organization, user):
             }
         )
 
-    customer, _ = Customer.objects.get_or_create(
-        name=customer_name,
-        organization=organization
-    )
-
-    order = Order.objects.create(
-        customer=customer,
-        organization=organization,
-    )
-
     product_ids = [
+
         item["product"].id
+
         for item in items_data
     ]
 
     products = {
+
         product.id: product
+
         for product in Product.objects
         .select_for_update()
         .filter(
             id__in=product_ids,
-            organization=organization
+            organization=organization,
         )
     }
 
@@ -88,14 +126,17 @@ def create_order(data, organization, user):
         quantity = item_data["quantity"]
 
         if quantity <= 0:
+
             raise ValidationError(
                 {
                     "quantity":
-                    "Quantity must be greater than 0."
+                    "Quantity must be "
+                    "greater than 0."
                 }
             )
 
         if product.id not in products:
+
             raise ValidationError(
                 {
                     "detail":
@@ -105,9 +146,12 @@ def create_order(data, organization, user):
                 }
             )
 
-        locked_product = products[product.id]
+        locked_product = (
+            products[product.id]
+        )
 
-        if locked_product.quantity <= 0:
+        if locked_product.stock <= 0:
+
             raise ValidationError(
                 {
                     "detail":
@@ -116,7 +160,8 @@ def create_order(data, organization, user):
                 }
             )
 
-        if quantity > locked_product.quantity:
+        if quantity > locked_product.stock:
+
             raise ValidationError(
                 {
                     "detail":
@@ -125,48 +170,74 @@ def create_order(data, organization, user):
                 }
             )
 
-        locked_product.quantity -= quantity
+        locked_product.stock -= quantity
 
         order_items.append(
+
             OrderItem(
-                order=order,
                 product=locked_product,
                 quantity=quantity,
-                price=locked_product.price
+                price=locked_product.price,
             )
         )
 
         total += (
-            locked_product.price * quantity
+            locked_product.price
+            * quantity
         )
 
     if total <= Decimal("0.00"):
+
         raise ValidationError(
             {
                 "detail":
-                "Order total must be greater than zero."
+                "Order total must be "
+                "greater than zero."
             }
         )
 
-    Product.objects.bulk_update(
-        products.values(),
-        ["quantity"]
+    customer, _ = (
+        Customer.objects.get_or_create(
+            name=customer_name,
+            organization=organization,
+        )
     )
 
-    OrderItem.objects.bulk_create(order_items)
+    order = Order.objects.create(
+        customer=customer,
+        organization=organization,
+        total=total,
+    )
 
-    order.total = total
+    for item in order_items:
 
-    order.save()
+        item.order = order
+
+    Product.objects.bulk_update(
+        products.values(),
+        ["stock"]
+    )
+
+    OrderItem.objects.bulk_create(
+        order_items
+    )
 
     return order
 
 
-def change_order_status(order, new_status):
+def change_order_status(
+    order,
+    new_status,
+):
 
-    new_status = new_status.lower().strip()
+    new_status = (
+        new_status
+        .lower()
+        .strip()
+    )
 
     if new_status not in VALID_TRANSITIONS:
+
         raise ValidationError(
             {
                 "status":
@@ -174,30 +245,40 @@ def change_order_status(order, new_status):
             }
         )
 
-    if order.status in ["delivered", "canceled"]:
+    if order.status in [
+        "delivered",
+        "canceled",
+    ]:
+
         raise ValidationError(
             {
                 "detail":
-                "Finalized orders cannot be modified."
+                "Finalized orders "
+                "cannot be modified."
             }
         )
 
-    allowed_statuses = VALID_TRANSITIONS[
-        order.status
-    ]
+    allowed_statuses = (
+        VALID_TRANSITIONS[
+            order.status
+        ]
+    )
 
     if new_status not in allowed_statuses:
+
         raise ValidationError(
             {
                 "detail":
-                f"Cannot change status from "
-                f"{order.status} to "
-                f"{new_status}."
+                f"Cannot change status "
+                f"from {order.status} "
+                f"to {new_status}."
             }
         )
 
     order.status = new_status
 
-    order.save()
+    order.save(
+        update_fields=["status"]
+    )
 
     return order

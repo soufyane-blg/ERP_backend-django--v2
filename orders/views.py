@@ -20,10 +20,42 @@ from accounts.permissions import (
     HasSameOrganization,
 )
 
+from django_filters.rest_framework import (
+    DjangoFilterBackend
+)
+
+from rest_framework.filters import (
+    SearchFilter,
+    OrderingFilter,
+)
+
+from .filters import OrderFilter
+
 
 class OrderViewSet(viewsets.ModelViewSet):
 
     serializer_class = OrderReadSerializer
+
+    filter_backends = [
+    DjangoFilterBackend,
+    SearchFilter,
+    OrderingFilter,
+    ]
+
+    filterset_class = OrderFilter
+
+    search_fields = [
+        "customer__name",
+    ]
+
+    ordering_fields = [
+        "order_date",
+        "total",
+    ]
+
+    ordering = [
+        "-order_date",
+    ]
 
     def get_permissions(self):
 

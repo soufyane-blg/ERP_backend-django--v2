@@ -1,7 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from django.core.exceptions import ValidationError
 
 from .serializers import RegisterSerializer, LoginSerializer
 from .services import (
@@ -13,8 +14,12 @@ from .services import (
 )
 
 
+
 class RegisterView(APIView):
 
+    
+    permission_classes = [AllowAny]
+    
     def post(self, request):
 
         serializer = RegisterSerializer(data=request.data)
@@ -27,12 +32,17 @@ class RegisterView(APIView):
 
 class LoginView(APIView):
 
+    permission_classes = [AllowAny]
+
     def post(self, request):
 
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        result = login_service(**serializer.validated_data)
+
+        result = login_service(
+                **serializer.validated_data
+            )
 
         response = Response({
             "user_id": result["user_id"],

@@ -19,11 +19,44 @@ from accounts.permissions import (
     HasSameOrganization,
 )
 
+from django_filters.rest_framework import (
+    DjangoFilterBackend
+)
+
+from rest_framework.filters import (
+    SearchFilter,
+    OrderingFilter,
+)
+
+from .filters import ProductFilter
+
 
 class ProductViewSet(viewsets.ModelViewSet):
 
     serializer_class = ProductReadSerializer
+    
+    filter_backends = [
+    DjangoFilterBackend,
+    SearchFilter,
+    OrderingFilter,
+    ]
 
+    filterset_class = ProductFilter
+
+    search_fields = [
+        "name",
+        "description",
+    ]
+
+    ordering_fields = [
+        "price",
+        "stock",
+        "created_at",
+    ]
+
+    ordering = [
+        "-created_at",
+    ]
     def get_queryset(self):
 
         return (

@@ -1,259 +1,294 @@
-ERP Backend API v2
+# ERP Backend API v2
 
 A production-ready ERP backend API built with Django REST Framework, PostgreSQL, Docker, and JWT authentication.
 
 This project provides a scalable multi-tenant ERP backend system for managing organizations, customers, products, and orders through a secure REST API.
 
-⸻
+---
 
-Live API Documentation
+# Live API Documentation
 
-Swagger UI
+## Swagger UI
 
 https://erp-backend-django-v2.onrender.com/api/docs/
 
-ReDoc
+## ReDoc
 
 https://erp-backend-django-v2.onrender.com/api/redoc/
 
-⸻
+---
 
-Features
+# Features
 
-* JWT Authentication
-* Multi-tenant Organization System
-* Product Management
-* Customer Management
-* Order Management
-* Order Items
-* Role-based Permissions
-* Search, Filtering, and Ordering
-* Service Layer Architecture
-* PostgreSQL Database
-* Dockerized Deployment
-* Swagger / ReDoc API Documentation
-* Automated Testing with Pytest
-* 92% Test Coverage
-* Production Deployment on Render
+- JWT Authentication
+- Multi-tenant Organization System
+- Product Management
+- Customer Management
+- Order Management
+- Order Items Management
+- Role-based Permissions
+- Search, Filtering, and Ordering
+- Service Layer Architecture
+- PostgreSQL Database
+- Dockerized Deployment
+- Swagger / ReDoc API Documentation
+- Automated Testing with Pytest
+- 92% Test Coverage
+- Production Deployment on Render
 
-⸻
+---
 
-Tech Stack
+# Tech Stack
 
-Backend
+## Backend
 
-* Python 3.12
-* Django 5
-* Django REST Framework
+- Python 3.12
+- Django 5
+- Django REST Framework
 
-Database
+## Database
 
-* PostgreSQL
+- PostgreSQL
 
-Authentication
+## Authentication
 
-* Simple JWT
+- Simple JWT
 
-DevOps
+## DevOps & Deployment
 
-* Docker
-* Docker Compose
-* Gunicorn
-* WhiteNoise
-* Render
+- Docker
+- Docker Compose
+- Gunicorn
+- WhiteNoise
+- Render
 
-Testing
+## Testing
 
-* Pytest
-* Pytest-Django
-* Coverage
+- Pytest
+- Pytest-Django
+- Coverage.py
 
-⸻
+---
 
-Project Structure
+# Project Structure
 
+```bash
 accounts/
 customers/
 orders/
 products/
 erp_v2/
+```
 
-The project follows a service-layer architecture to separate business logic from views and serializers.
+The project follows a service-layer architecture to separate business logic from views and serializers, making the codebase cleaner, scalable, and easier to maintain.
 
-⸻
+---
 
-API Modules
+# API Modules
 
-Accounts
+## Accounts
 
-* User Registration
-* JWT Login / Refresh
-* Organization-based Access Control
+- User Registration
+- JWT Login / Token Refresh
+- Organization-based Access Control
 
-Customers
+## Customers
 
-* Create / Update / Delete Customers
-* Organization Isolation
-* Search & Filtering
+- Create / Update / Delete Customers
+- Organization Isolation
+- Search & Filtering
 
-Products
+## Products
 
-* Product CRUD Operations
-* Stock Management
-* Filtering / Ordering / Search
+- Product CRUD Operations
+- Stock Management
+- Filtering / Ordering / Search
 
-Orders
+## Orders
 
-* Create Orders
-* Order Status Management
-* Stock Validation
-* Atomic Transactions
-* Order Items Management
+- Create Orders
+- Order Status Management
+- Stock Validation
+- Atomic Transactions
+- Order Items Management
 
-⸻
+---
 
-Authentication
+# Authentication
 
 The API uses JWT Authentication.
 
-Obtain Token
+## Obtain Access & Refresh Tokens
 
+```http
 POST /api/token/
+```
 
-Refresh Token
+## Refresh Access Token
 
+```http
 POST /api/token/refresh/
+```
 
-⸻
+---
 
-Running Locally
+# Running Locally
 
-Clone the repository
+## Clone the Repository
 
+```bash
 git clone https://github.com/YOUR_USERNAME/YOUR_REPOSITORY.git
+```
 
-Navigate into the project
+## Navigate into the Project
 
+```bash
 cd ERP_backend-django--v2
+```
 
-Create virtual environment
+## Create Virtual Environment
 
+```bash
 python -m venv venv
+```
 
-Activate virtual environment
+## Activate Virtual Environment
 
-macOS / Linux
+### macOS / Linux
 
+```bash
 source venv/bin/activate
+```
 
-Windows
+### Windows
 
+```bash
 venv\Scripts\activate
+```
 
-⸻
+---
 
-Install Dependencies
+# Install Dependencies
 
+```bash
 pip install -r requirements.txt
+```
 
-⸻
+---
 
-Environment Variables
+# Environment Variables
 
-Create a .env file:
+Create a `.env` file in the project root:
 
+```env
 DEBUG=True
+
 SECRET_KEY=your_secret_key
+
 DATABASE_URL=your_database_url
+
 ALLOWED_HOSTS=127.0.0.1,localhost
+```
 
-⸻
+---
 
-Run Migrations
+# Apply Migrations
 
+```bash
 python manage.py migrate
+```
 
-⸻
+---
 
-Run Development Server
+# Run Development Server
 
+```bash
 python manage.py runserver
+```
 
-⸻
+---
 
-Docker Setup
+# Docker Setup
 
-Build and Run
+## Build and Run Containers
 
+```bash
 docker compose up --build
+```
 
-⸻
+---
 
-Run Tests
+# Run Tests
 
+```bash
 pytest
+```
 
-⸻
+---
 
-Run Coverage
+# Run Coverage Report
 
+```bash
 pytest --cov=. --cov-report=term-missing
+```
 
 Current coverage:
 
+```text
 92%
+```
 
-⸻
+---
 
-Production Features
+# Production Features
 
-* PostgreSQL Production Database
-* Dockerized Deployment
-* WhiteNoise Static Files
-* Gunicorn WSGI Server
-* Environment-based Settings
-* Secure JWT Authentication
+- PostgreSQL Production Database
+- Dockerized Deployment
+- WhiteNoise Static Files Handling
+- Gunicorn WSGI Server
+- Environment-based Settings
+- Secure JWT Authentication
 
-⸻
+---
 
-API Documentation
+# API Documentation
 
-Interactive API documentation is available through Swagger and ReDoc.
+Interactive API documentation is available through Swagger UI and ReDoc.
 
-Swagger
+## Swagger UI
 
 https://erp-backend-django-v2.onrender.com/api/docs/
 
-ReDoc
+## ReDoc
 
 https://erp-backend-django-v2.onrender.com/api/redoc/
 
-⸻
+---
 
-Deployment
+# Deployment
 
 The project is deployed on Render using:
 
-* Docker
-* PostgreSQL
-* Gunicorn
-* WhiteNoise
+- Docker
+- PostgreSQL
+- Gunicorn
+- WhiteNoise
 
-⸻
+---
 
-Future Improvements
+# Future Improvements
 
-* Redis Caching
-* Celery Background Tasks
-* Email Notifications
-* File Uploads
-* WebSockets
-* CI/CD Pipelines
-* AWS Deployment
-* Rate Limiting Enhancements
+- Redis Caching
+- Celery Background Tasks
+- Email Notifications
+- File Uploads
+- WebSockets
+- CI/CD Pipelines
+- AWS Deployment
+- Advanced Rate Limiting
 
-⸻
+---
 
-Author
+# Author
 
-Built by Soufyane BLG
+Built by Soufyane BLG.
